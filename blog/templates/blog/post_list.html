@@ -1,3 +1,4 @@
+{% extends 'blog/base.html' %}
 {% load static %}
 <!DOCTYPE html>
 <html>
@@ -24,6 +25,7 @@
         <main class="container">
             <div class="row">
                 <div class="col">
+                    {% block content %}
                     {% for post in posts %}
                         <article class="post">
                             <time class="date">
@@ -33,6 +35,7 @@
                             <p>{{ post.text|linebreaksbr }}</p>
                         </article>
                     {% endfor %}
+                {% endblock %}
                 </div>
             </div>
         </main>
