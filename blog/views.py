@@ -1,11 +1,8 @@
-from telnetlib import LOGOUT
 from django.shortcuts import get_object_or_404, redirect, render
 from .models import Post,Comment
 from .forms import PostForm, CommentForm
 from django.contrib.auth.decorators import login_required
 
-from django.shortcuts import redirect
-from django.contrib.auth import logout  # Importing the logout function
 
 from django.utils import timezone
 
@@ -13,9 +10,8 @@ from django.utils import timezone
 # Create your views here.
 
 def post_list(request):
-    posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')
-    return render(request ,'blog/post_list.html',{'posts':posts})
-
+    posts = Post.objects.all().order_by('-published_date')
+    return render(request, 'blog/post_list.html', {'posts': posts})
 
 
 def post_detail(request, pk):
@@ -26,11 +22,11 @@ def post_detail(request, pk):
 
 def post_new(request):
     if request.method == "POST":
-        form = PostForm(request.POST)
+        form = PostForm(request.POST, request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
-            # post.published_date = timezone.now()
+            post.published_date = timezone.now()  # Set published date to current time
             post.save()
             return redirect('post_detail', pk=post.pk)
     else:
@@ -45,11 +41,11 @@ def post_edit(request, pk):
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
+            post.published_date = timezone.now()
             post.save()
-            print('ok')
             return redirect('post_detail', pk=post.pk)
     else:
-        form = PostForm(instance=post)
+        form = PostForm(instance=post)  # Pass instance=post here
     return render(request, 'blog/post_edit.html', {'form': form})
 
 @login_required
@@ -93,8 +89,3 @@ def comment_remove(request, pk):
     comment = get_object_or_404(Comment, pk=pk)
     comment.delete()
     return redirect('post_detail', pk=comment.post.pk)
-
-def logout_view(request):
-    logout(request)  # Using the logout function to log out the user
-    # Redirect to a different page after logout
-    return redirect('login')  # Assuming you have a 'login' URL pattern
